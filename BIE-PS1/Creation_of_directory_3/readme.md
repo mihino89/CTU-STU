@@ -1,0 +1,1 @@
+Create two subdirectories (at the same level) with names alpha and beta in the working directory. Then create a file with the same name as the directory in each subdirectory. The content of the files does not matter.

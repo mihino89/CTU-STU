@@ -1,0 +1,151 @@
+Symbol  Name    Sector  Market Cap, $K  Last    Links
+ AAPL
+Apple Inc
+Computers and Technology
+2,006,722,560
+118.03
+ AMGN
+Amgen Inc
+Medical
+132,594,808
+227.76
+ AXP
+American Express Company
+Finance
+91,986,280
+114.24
+ BA
+Boeing Company
+Aerospace
+114,768,960
+203.30
+ CAT
+Caterpillar Inc
+Industrial Products
+93,842,392
+172.74
+ CRM
+Salesforce.com Inc
+Computers and Technology
+234,015,600
+257.16
+ CSCO
+Cisco Systems Inc
+Computers and Technology
+174,412,544
+41.32
+ CVX
+Chevron Corp
+Oils-Energy
+157,377,984
+84.28
+ DIS
+Walt Disney Company
+Consumer Discretionary
+260,036,352
+143.90
+ DOW
+Dow Inc
+Basic Materials
+41,018,884
+55.30
+ GS
+Goldman Sachs Group
+Finance
+77,174,448
+224.30
+ HD
+Home Depot
+Retail-Wholesale
+290,460,128
+269.83
+ HON
+Honeywell International Inc
+Conglomerates
+141,116,064
+201.11
+ IBM
+International Business Machines
+Computers and Technology
+104,048,720
+116.77
+ INTC
+Intel Corp
+Computers and Technology
+184,655,872
+45.06
+ JNJ
+Johnson & Johnson
+Medical
+387,957,824
+147.37
+ JPM
+JP Morgan Chase & Company
+Finance
+351,305,408
+115.25
+ KO
+Coca-Cola Company
+Consumer Staples
+226,088,064
+52.61
+ MCD
+McDonald's Corp
+Retail-Wholesale
+160,586,336
+215.52
+ MMM
+3M Company
+Conglomerates
+98,867,288
+171.40
+ MRK
+Merck & Company
+Medical
+203,035,216
+80.25
+ MSFT
+Microsoft Corp
+Computers and Technology
+1,595,869,600
+211.08
+ NKE
+Nike Inc
+Consumer Staples
+206,636,336
+131.63
+ PG
+Procter & Gamble Company
+Consumer Staples
+346,400,960
+139.70
+ TRV
+The Travelers Companies Inc
+Finance
+34,037,128
+134.37
+ UNH
+Unitedhealth Group Inc
+Medical
+326,878,336
+344.51
+ V
+Visa Inc
+Business Services
+403,684,832
+207.83
+ VZ
+Verizon Communications Inc
+Utilities
+249,609,840
+60.32
+ WBA
+Walgreens Boots Alliance
+Retail-Wholesale
+33,103,970
+38.23
+ WMT
+Wal-Mart Stores
+Retail-Wholesale
+422,484,192
+149.09
