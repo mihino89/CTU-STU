@@ -175,11 +175,14 @@ void aes(uint8_t *in, uint8_t *out, uint8_t *skey)
 {
 	//... Initialize ...
 	unsigned short round = 0;
+    unsigned short numberOfRounds = 10;
 
 	t_state state;
 
 	state[0] = word(in[0],  in[1],  in[2],  in[3]);
-	/* ??? */
+	state[1] = word(in[4], in[5], in[6], in[7]);
+    state[2] = word(in[8], in[9], in[10], in[11]);
+    state[3] = word(in[12], in[13], in[14], in[15]);
 
 	printf("IN:  "); printstate(state);
 
@@ -195,9 +198,17 @@ void aes(uint8_t *in, uint8_t *out, uint8_t *skey)
 	addRoundKey(state, expKey, 0);
 	printf("ARK: "); printstate(state);
 
-	/* ??? */
-	/* ??? */
-	/* ??? */
+	for(int i = 0; i < numberOfRounds; i++){
+        subBytes(state);
+        shiftRows(state);
+        mixColumns(state);
+        addRoundKey(state, expKey, i);
+    }
+
+    // Final round
+    subBytes(state);
+    shiftRows(state);
+    addRoundKey(state, expKey, numberOfRounds);
 
 
 	for (int i = 0; i < 16; i++) {
