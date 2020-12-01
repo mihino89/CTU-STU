@@ -11,6 +11,14 @@ http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
 */
 
 /* AES Constants */
+// The other matrix - Galois fields
+
+const int G_FIELD[4][4] = {
+	{2, 3, 1, 1},
+	{1, 2, 3, 1},
+	{1, 1, 2, 3},
+	{3, 1, 1, 2}
+};
 
 // forward sbox
 const uint8_t SBOX[256] = {
@@ -136,7 +144,7 @@ void shiftRows(t_state state) {
 }
 
 uint8_t xtime(uint8_t a) {
-	return 0; /* ??? */
+	return ((a << 1) ^ (((a >> 7) & 1) * 0x1b));
 }
 
 // not mandatory - mix a single column
@@ -146,7 +154,32 @@ uint32_t mixColumn(uint32_t c) {
 
 
 void mixColumns(t_state s) {
-	/* ??? */
+	uint8_t state[4][4];
+    for(int i = 0 ; i < 4 ; i++){
+        for(int j = 0 ; j < 4 ; j++){
+            state[i][j] = wbyte(s[i],j);
+        }
+    }
+    
+    uint8_t newState[4][4];
+    for(int x = 0; x < 4; x++){
+        for(int y = 0; y < 4; y++){
+            uint8_t sum = 0;
+            for(int z = 0; z < 4; z++){
+                if(G_FIELD[x][z] == 1)
+                    sum ^= state[y][z];
+                else if(G_FIELD[x][z] == 2)
+                    sum ^= xtime(state[y][z]);
+                else 
+                    sum ^= (xtime(state[y][z])^state[y][z]);
+            }
+            newState[x][y] = sum;
+        }
+    }
+    
+    for (int i = 0; i < 4; i++) {
+        s[i] = word(newState[0][i],newState[1][i],newState[2][i],newState[3][i]);
+    }
 }
 
 /*
@@ -238,7 +271,6 @@ int main(int argc, char* argv[])
 	}
 	// test shiftRows
 	printf("Testing shiftRows\n");
-
 	{
 		t_state state = { 0x01234567, 0x89abcdef, 0xdeadbeef, 0x00112233 };
 		t_state res_state = { 0x00adcd67, 0x0111beef, 0x892322ef, 0xdeab4533 };
@@ -374,4 +406,3 @@ int main(int argc, char* argv[])
 	}
 	return  test_failed;
 }
-
