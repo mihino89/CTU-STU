@@ -104,7 +104,7 @@ void shiftRows(t_state state) {
             tmp[j*4+i] = wbyte(state[i],j);
         }
     }    
-    /**
+    /** Trying this
      * 67 ef ef 33 
      * 45 cd be 22 
      * 23 ab ad 11 
@@ -182,33 +182,56 @@ void mixColumns(t_state s) {
     }
 }
 
+
+// Rotation left
+uint32_t rotationLeft(uint32_t word) {
+	uint32_t tmp = wbyte(word,0);
+    return (word >> 8) | ((tmp & 0xFF) << 24);
+}
+
 /*
 * Key expansion from 128bits (4*32b)
 * to 11 round keys (11*4*32b)
 * each round key is 4*32b
 */
 void expandKey(uint8_t k[16], uint32_t ek[44]) {
-	/* ??? */
+    int counter = 0;
+
+	while(counter < 4){
+		ek[counter] = word(k[4*counter], k[4*counter+1], k[4*counter+2], k[4*counter+3]);
+		counter++;
+	}
+ 
+    int bG = 4;
+	uint32_t tmp;
+ 
+    while(bG < 44) {
+        tmp = ek[bG-1];
+        if(bG % 4 == 0) {
+			// Sbox + rotation L + rCon
+            tmp = subWord(rotationLeft(ek[bG-1])) ^ rCon[bG/4];
+		}
+        ek[bG] = ek[bG-4] ^ tmp;
+        bG++;
+	}
 }
 
 
 /** 
  * Adding expanded round key (prepared before) 
  * XOR operation  
- * TODO -> Neotestovane !
+ * Neotestovane !
 */
-void addRoundKey(t_state state, uint32_t ek[], short round) {
-	
-    for (int i = 0; i < 4; i++){
+void addRoundKey(t_state state, uint32_t ek[], short round) {	
+    for (int i = 0; i < 4; i++)
         state[i] ^= ek[4*round+i];
-    }
 }
 
 void aes(uint8_t *in, uint8_t *out, uint8_t *skey)
 {
 	//... Initialize ...
 	unsigned short round = 0;
-    unsigned short numberOfRounds = 10;
+    const int numberOfRounds = 10;
 
 	t_state state;
 
@@ -231,7 +254,7 @@ void aes(uint8_t *in, uint8_t *out, uint8_t *skey)
 	addRoundKey(state, expKey, 0);
 	printf("ARK: "); printstate(state);
 
-	for(int i = 0; i < numberOfRounds; i++){
+	for(int i = 1; i < numberOfRounds; i++){
         subBytes(state);
         shiftRows(state);
         mixColumns(state);
@@ -321,7 +344,7 @@ int main(int argc, char* argv[])
 			0xfb, 0xf9, 0xff, 0xfd, 0xf3, 0xf1, 0xf7, 0xf5, 0xeb, 0xe9,
 			0xef, 0xed, 0xe3, 0xe1, 0xe7, 0xe5 };
 		for (uint16_t i = 0; i < 256; i++) {
-			//printf("0x%02hhx,   ", xtime((uint8_t)i));
+			// printf("0x%02hhx,   ", xtime((uint8_t)i));
 			if (xtime((uint8_t)i)!=res[i]) { 
 				printf("\nMismatch at xtime(0x%02x)! Comparison interrupted.\n", i);  test_failed = 1;
 				break;
