@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <time.h>
 
 /* AES-128 simple implementation template and testing */
 
@@ -13,15 +14,20 @@ http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
 /* AES Constants */
 // The other matrix - Galois fields
 
-const int G_FIELD[4][4] = {
+const int G_FIELD_o[4][4] = {
 	{2, 3, 1, 1},
 	{1, 2, 3, 1},
 	{1, 1, 2, 3},
 	{3, 1, 1, 2}
 };
 
+uint32_t TB0[256] = { 0 };
+uint32_t TB1[256] = { 0 };
+uint32_t TB2[256] = { 0 };
+uint32_t TB3[256] = { 0 };
+
 // forward sbox
-const uint8_t SBOX[256] = {
+const uint8_t SBOX_o[256] = {
 	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
     0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
     0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -40,7 +46,7 @@ const uint8_t SBOX[256] = {
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 }; 
 
-const uint8_t rCon[12] = {
+const uint8_t rCon_o[12] = {
 	0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36,
 };
 
@@ -48,60 +54,60 @@ const uint8_t rCon[12] = {
 typedef uint32_t t_state[4];
 
 /* Helper functions */
-void hexprint16(uint8_t *p) {
+void hexprint16_o(uint8_t *p) {
 	for (int i = 0; i < 16; i++)
 		printf("%02hhx ", p[i]);
 	puts("");
 }
 
-void hexprintw(uint32_t w) {
+void hexprintw_o(uint32_t w) {
 	for (int i = 0; i < 32; i += 8)
 		printf("%02hhx ", (w >> i) & 0xffU);
 }
 
-void hexprintws(uint32_t * p, int cnt) {
+void hexprintw_os(uint32_t * p, int cnt) {
 	for (int i = 0; i < cnt; i++)
-		hexprintw(p[i]);
+		hexprintw_o(p[i]);
 	puts("");
 }
-void printstate(t_state s) {
-	hexprintw(s[0]);
-	hexprintw(s[1]);
-	hexprintw(s[2]);
-	hexprintw(s[3]);
+void printstate_o(t_state s) {
+	hexprintw_o(s[0]);
+	hexprintw_o(s[1]);
+	hexprintw_o(s[2]);
+	hexprintw_o(s[3]);
 	puts("");
 }
 
-uint32_t word(uint8_t a0, uint8_t a1, uint8_t a2, uint8_t a3) {
+uint32_t word_o(uint8_t a0, uint8_t a1, uint8_t a2, uint8_t a3) {
 	return a0 | (uint32_t)a1 << 8 | (uint32_t)a2 << 16 | (uint32_t)a3 << 24;
 }
 
-uint8_t wbyte(uint32_t w, int pos) {
+uint8_t wbyte_o(uint32_t w, int pos) {
 	return (w >> (pos * 8)) & 0xff;
 }
 
 // **************** AES  functions ****************
-uint32_t subWord(uint32_t w) {
-	return word(SBOX[wbyte(w, 0)], SBOX[wbyte(w, 1)], SBOX[wbyte(w, 2)], SBOX[wbyte(w, 3)]);
+uint32_t subWord_s(uint32_t w) {
+	return word_o(SBOX_o[wbyte_o(w, 0)], SBOX_o[wbyte_o(w, 1)], SBOX_o[wbyte_o(w, 2)], SBOX_o[wbyte_o(w, 3)]);
 }
 
 
 // { 0x01234567, 0x89abcdef, 0xdeadbeef, 0x00112233 }
-void subBytes(t_state state) {
+void subBytes_o(t_state state) {
 	
     for (int i = 0; i < 4; i++){
-        state[i] = subWord(state[i]);
+        state[i] = subWord_s(state[i]);
     }
 }
 
 
-void shiftRows(t_state state) {
+void shiftRows_o(t_state state) {
 
     unsigned char tmp[16], tmp1[16];
 
     for (int i = 0; i < 4; i++){
         for (int j = 0; j < 4; j++){
-            tmp[j*4+i] = wbyte(state[i],j);
+            tmp[j*4+i] = wbyte_o(state[i],j);
         }
     }    
     /** Trying this
@@ -139,25 +145,25 @@ void shiftRows(t_state state) {
     */
 
     for (int i = 0; i < 4; i ++){
-        state[i] = word(tmp1[0+i], tmp1[4+i], tmp1[8+i], tmp1[12+i]);
+        state[i] = word_o(tmp1[0+i], tmp1[4+i], tmp1[8+i], tmp1[12+i]);
     }
 }
 
-uint8_t xtime(uint8_t a) {
+uint8_t xtime_o(uint8_t a) {
 	return ((a << 1) ^ (((a >> 7) & 1) * 0x1b));
 }
 
 // not mandatory - mix a single column
-uint32_t mixColumn(uint32_t c) {
+uint32_t mixColumn_o(uint32_t c) {
 	return 0; /* ??? */
 }
 
 
-void mixColumns(t_state s) {
+void mixColumns_o(t_state s) {
 	uint8_t state[4][4];
     for(int i = 0 ; i < 4 ; i++){
         for(int j = 0 ; j < 4 ; j++){
-            state[i][j] = wbyte(s[i],j);
+            state[i][j] = wbyte_o(s[i],j);
         }
     }
     
@@ -166,27 +172,27 @@ void mixColumns(t_state s) {
         for(int y = 0; y < 4; y++){
             uint8_t sum = 0;
             for(int z = 0; z < 4; z++){
-                if(G_FIELD[x][z] == 1)
+                if(G_FIELD_o[x][z] == 1)
                     sum ^= state[y][z];
-                else if(G_FIELD[x][z] == 2)
-                    sum ^= xtime(state[y][z]);
+                else if(G_FIELD_o[x][z] == 2)
+                    sum ^= xtime_o(state[y][z]);
                 else 
-                    sum ^= (xtime(state[y][z])^state[y][z]);
+                    sum ^= (xtime_o(state[y][z])^state[y][z]);
             }
             newState[x][y] = sum;
         }
     }
     
     for (int i = 0; i < 4; i++) {
-        s[i] = word(newState[0][i],newState[1][i],newState[2][i],newState[3][i]);
+        s[i] = word_o(newState[0][i],newState[1][i],newState[2][i],newState[3][i]);
     }
 }
 
 
 // Rotation left
-uint32_t rotationLeft(uint32_t word) {
-	uint32_t tmp = wbyte(word,0);
-    return (word >> 8) | ((tmp & 0xFF) << 24);
+uint32_t rotationLeft_o(uint32_t word_o) {
+	uint32_t tmp = wbyte_o(word_o,0);
+    return (word_o >> 8) | ((tmp & 0xFF) << 24);
 }
 
 /*
@@ -194,11 +200,11 @@ uint32_t rotationLeft(uint32_t word) {
 * to 11 round keys (11*4*32b)
 * each round key is 4*32b
 */
-void expandKey(uint8_t k[16], uint32_t ek[44]) {
+void expandKey_o(uint8_t k[16], uint32_t ek[44]) {
     int counter = 0;
 
 	while(counter < 4){
-		ek[counter] = word(k[4*counter], k[4*counter+1], k[4*counter+2], k[4*counter+3]);
+		ek[counter] = word_o(k[4*counter], k[4*counter+1], k[4*counter+2], k[4*counter+3]);
 		counter++;
 	}
  
@@ -208,16 +214,42 @@ void expandKey(uint8_t k[16], uint32_t ek[44]) {
     while(bG < 44) {
         tmp = ek[bG-1];
         if(bG % 4 == 0) {
-			// Sbox + rotation L + rCon
-            tmp = subWord(rotationLeft(ek[bG-1])) ^ rCon[bG/4];
+			// Sbox + rotation L + rCon_o
+            tmp = subWord_s(rotationLeft_o(ek[bG-1])) ^ rCon_o[bG/4];
 		}
         ek[bG] = ek[bG-4] ^ tmp;
         bG++;
 	}
 }
 
+uint8_t mul_o(uint8_t bFac1, uint8_t bFac2) {
+	uint8_t p = 0;
+	uint8_t counter;
+	uint8_t hi_bit_set;
+	for(counter = 0; counter < 8; counter++) {
+		if((bFac2 & 1) == 1) 
+			p ^= bFac1;
+		hi_bit_set = (bFac1 & 0x80);
+		bFac1 <<= 1;
+		if(hi_bit_set == 0x80) 
+			bFac1 ^= 0x1b;		
+		bFac2 >>= 1;
+	}
+	return p;
+}
 
-void TBox(t_state s){
+
+void init_tboxes_o(){
+    for(int i = 0; i < 256; i++){
+        TB0[i] = word_o( mul_o(SBOX_o[i], 02), SBOX_o[i], SBOX_o[i], mul_o(SBOX_o[i], 03));      
+        TB1[i] = word_o( mul_o(SBOX_o[i], 03), mul_o(SBOX_o[i], 02), SBOX_o[i], SBOX_o[i]);
+        TB2[i] = word_o(SBOX_o[i], mul_o(SBOX_o[i], 03), mul_o(SBOX_o[i], 02), SBOX_o[i]);
+        TB3[i] = word_o(SBOX_o[i], SBOX_o[i], mul_o(SBOX_o[i], 03), mul_o(SBOX_o[i], 02));
+    }
+}
+
+
+void TBox_o(t_state state){
 
     /**
      * ab dc cd 32
@@ -226,108 +258,12 @@ void TBox(t_state s){
      * ef 98 89 76
     */
 
-    uint8_t tmp[4][4];
-    for(int i = 0 ; i < 4 ; i++){
-        for(int j = 0 ; j < 4 ; j++){
-            tmp[j][i] = wbyte(s[i],j);
-        }
-        printf("%02x %02x %02x %02x\n",tmp[0][i],tmp[1][i],tmp[2][i],tmp[3][i]);
-    }
-
-    /**
-     * ab 67 23 ef
-     * dc 10 54 98
-     * cd 01 45 89
-     * 32 fe ba 76
-    */
-
-    // S-BOXing to columns
-    uint8_t y0[4], y1[4], y2[4], y3[4];
-    for(int i = 0 ; i < 4 ; i++){
-        for(int j = 0 ; j < 4 ; j++){
-            tmp[i][j] = SBOX[tmp[i][j]];
-            if(i == 0){
-                y0[j] = tmp[i][j];
-            } else if(i == 1){
-                y1[j] = tmp[i][j];
-            } else if(i == 2){
-                y2[j] = tmp[i][j];
-            } else {
-                y3[j] = tmp[i][j];
-            } 
-        }
-    }
-
-    /**
-     * T-Boxing
-     * In each round, theAddRoundKeyandSubBytestransformations can be combined into
-     * a series of sixteen look-up tables that map bytes to bytes (i.e., 8-bits to 8-bits). 
-     * These so-calledT-boxesare defined as follows:
-     * https://eprint.iacr.org/2013/104.pdf
-    */
-    uint8_t TB0[4][4], TB1[4][4], TB2[4][4], TB3[4][4];
-    for(int i = 0 ; i < 4 ; i++){
-        for(int j = 0 ; j < 4 ; j++){
-            switch (i) {
-                case 0:
-                    TB0[i][j] = xtime(y0[j]);
-                    TB1[i][j] = xtime(y1[(j+1)%4])^y1[(j+1)%4];
-                    TB2[i][j] = y2[(j+2)%4];
-                    TB3[i][j] = y3[(j+3)%4];
-                    break;
-                case 1:
-                    TB0[i][j] = y0[j];
-                    TB1[i][j] = xtime(y1[(j+1)%4]);
-                    TB2[i][j] = xtime(y2[(j+2)%4])^y2[(j+2)%4];
-                    TB3[i][j] = y3[(j+3)%4];
-                    break;
-                case 2:
-                    TB0[i][j] = y0[j];
-                    TB1[i][j] = y1[(j+1)%4];
-                    TB2[i][j] = xtime(y2[(j+2)%4]);
-                    TB3[i][j] = xtime(y3[(j+3)%4])^y3[(j+3)%4];
-                    break;
-                default:
-                    TB0[i][j] = xtime(y0[j])^y0[j];
-                    TB1[i][j] = y1[(j+1)%4];
-                    TB2[i][j] = y2[(j+2)%4];
-                    TB3[i][j] = xtime(y3[(j+3)%4]);
-                    break;
-            }
-        }
-    }
-    
-    // final XOR
-    uint8_t FINAL[4][4];
-    for(int i = 0 ; i < 4 ; i++){
-        for (int j = 0 ; j < 4 ; j++)
-            FINAL[i][j] = TB0[i][j]^TB1[i][j]^TB2[i][j]^TB3[i][j];
-    }
-
-    // transformation back
-    for (int i = 0 ; i < 4 ; i++)
-        s[i] = word(FINAL[0][i],FINAL[1][i],FINAL[2][i],FINAL[3][i]);
-}
-
-
-void LTBox(t_state s){
-    uint8_t tmp[4][4];
-    for(int i = 0 ; i < 4 ; i++){
-        for(int j = 0 ; j < 4 ; j++)
-            tmp[j][i] = wbyte(s[i],j);
-    }
-
-    /**
-     * T-Boxing
-    */
-    uint8_t state[4][4];
-    for(int i = 0 ; i < 4 ; i++){
-        for(int j = 0 ; j < 4 ; j++)
-            state[i][j] = SBOX[tmp[i][(j+i)%4]];
-    }
-
-    for (int i = 0 ; i < 4 ; i++)
-        s[i] = word(state[0][i],state[1][i],state[2][i],state[3][i]);
+    t_state tmp;
+    for(int i = 0; i < 4; i++)
+       tmp[i] = TB0[wbyte_o(state[i], 0)] ^ TB1[wbyte_o(state[(i+1)%4], 1)] ^ TB2[wbyte_o(state[(i+2)%4], 2)] ^ TB3[wbyte_o(state[(i+3)%4], 3)];
+   
+    for(int i = 0; i < 4; i++)
+        state[i] = tmp[i];
 }
 
 
@@ -336,95 +272,101 @@ void LTBox(t_state s){
  * XOR operation  
  * Neotestovane !
 */
-void addRoundKey(t_state state, uint32_t ek[], short round) {	
+void addRoundKey_o(t_state state, uint32_t ek[], short round) {	
     for (int i = 0; i < 4; i++)
         state[i] ^= ek[4*round+i];
 }
 
-void aes(uint8_t *in, uint8_t *out, uint8_t *skey) {
+void aes_o(uint8_t *in, uint8_t *out, uint8_t *skey) {
+    uint8_t help=8;
+    // printf("0x%08x", xtime_o(help));
+    // printf("0x%08x", mul_o(help, 02));
+
 	//... Initialize ...
 	unsigned short round = 0;
     const int numberOfRounds = 10;
 
 	t_state state;
 
-	state[0] = word(in[0],  in[1],  in[2],  in[3]);
-	state[1] = word(in[4], in[5], in[6], in[7]);
-    state[2] = word(in[8], in[9], in[10], in[11]);
-    state[3] = word(in[12], in[13], in[14], in[15]);
+	state[0] = word_o(in[0],  in[1],  in[2],  in[3]);
+	state[1] = word_o(in[4], in[5], in[6], in[7]);
+    state[2] = word_o(in[8], in[9], in[10], in[11]);
+    state[3] = word_o(in[12], in[13], in[14], in[15]);
 
-	printf("IN:  "); printstate(state);
+	// printf("IN:  "); printstate_o(state);
 
 	uint32_t expKey[11 * 4];
 
-	expandKey(skey, expKey);
+	expandKey_o(skey, expKey);
 
-	for (int i = 0; i < 11; i++) {
-		printf("K%02d: ", i);
-		hexprintws(expKey + 4 * i, 4);
-	}
+	// for (int i = 0; i < 11; i++) {
+	// 	// printf("K%02d: ", i);
+	// 	hexprintw_os(expKey + 4 * i, 4);
+	// }
 
-	addRoundKey(state, expKey, 0);
-	printf("ARK: "); printstate(state);
+	addRoundKey_o(state, expKey, 0);
+	// printf("ARK: "); printstate_o(state);
 
 	for(int i = 1; i < numberOfRounds; i++){
-        TBox(state);
-        addRoundKey(state, expKey, i);
+        TBox_o(state);
+        // printstate_o(state);
+        addRoundKey_o(state, expKey, i);
     }
 
-    LTBox(state);
-    addRoundKey(state, expKey, numberOfRounds);
-
+    // Final round
+    subBytes_o(state);
+    shiftRows_o(state);
+    addRoundKey_o(state, expKey, numberOfRounds);
 
 	for (int i = 0; i < 16; i++) {
-		if (i < 4) out[i] = wbyte(state[0], i % 4);
-		else if (i < 8) out[i] = wbyte(state[1], i % 4);
-		else if (i < 12) out[i] = wbyte(state[2], i % 4);
-		else out[i] = wbyte(state[3], i % 4);
+		if (i < 4) out[i] = wbyte_o(state[0], i % 4);
+		else if (i < 8) out[i] = wbyte_o(state[1], i % 4);
+		else if (i < 12) out[i] = wbyte_o(state[2], i % 4);
+		else out[i] = wbyte_o(state[3], i % 4);
 	}
 }
 
 //****************************
 // MAIN function: AES testing
 //****************************
-int main(int argc, char* argv[])
-{
+int aes_optimazed(){
 	int test_failed = 0;
-	// test subBytes
-	printf("Testing subBytes\n");
+    // init_tboxes_o();
+	// test subBytes_o
+	printf("Testing subBytes_o\n");
 	{
 		t_state state = { 0x01234567, 0x89abcdef, 0xdeadbeef, 0x00112233 };
 		t_state res_state = { 0x7c266e85, 0xa762bddf, 0x1d95aedf, 0x638293c3 };
-		subBytes(state);
+		subBytes_o(state);
 		printf("0x%08x, 0x%08x, 0x%08x, 0x%08x\n", state[0], state[1], state[2], state[3]);
 		for (int i = 0; i < 4; i++) {
 			if (state[i] != res_state[i]) { printf("Mismatch at state[%d]!\n", i); test_failed = 1; }
 		}
 	}
-	// test shiftRows
-	printf("Testing shiftRows\n");
+	// test shiftRows_o
+	printf("Testing shiftRows_o\n");
 	{
 		t_state state = { 0x01234567, 0x89abcdef, 0xdeadbeef, 0x00112233 };
 		t_state res_state = { 0x00adcd67, 0x0111beef, 0x892322ef, 0xdeab4533 };
-		shiftRows(state);
+		shiftRows_o(state);
 		printf("0x%08x, 0x%08x, 0x%08x, 0x%08x\n", state[0], state[1], state[2], state[3]);
 		for (int i = 0; i < 4; i++) {
 			if (state[i] != res_state[i]) { printf("Mismatch at state[%d]!\n", i); test_failed = 1; }
 		}
 	}
-	// test mixColumns
-	printf("Testing mixColumns\n");
+	// test mixColumns_o
+	printf("Testing mixColumns_o\n");
 	{
 		t_state state = { 0x01234567, 0x89abcdef, 0xdeadbeef, 0x00112233 };
 		t_state res_state = { 0xcd678923, 0x45ef01ab, 0x9e69ba6f, 0x66334411 };
-		mixColumns(state);
+		mixColumns_o(state);
 		printf("0x%08x, 0x%08x, 0x%08x, 0x%08x\n", state[0], state[1], state[2], state[3]);
 		for (int i = 0; i < 4; i++) {
 			if (state[i] != res_state[i]) { printf("Mismatch at state[%d]!\n", i); test_failed = 1; }
 		}
 	}
-	// test xtime
-	printf("Testing xtime\n");
+	// test xtime_o
+	printf("Testing xtime_o\n");
 	{
 		uint8_t res[256] = { 0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c, 0x0e, 0x10, 0x12,
 			0x14, 0x16, 0x18, 0x1a, 0x1c, 0x1e, 0x20, 0x22, 0x24, 0x26,
@@ -453,9 +395,9 @@ int main(int argc, char* argv[])
 			0xfb, 0xf9, 0xff, 0xfd, 0xf3, 0xf1, 0xf7, 0xf5, 0xeb, 0xe9,
 			0xef, 0xed, 0xe3, 0xe1, 0xe7, 0xe5 };
 		for (uint16_t i = 0; i < 256; i++) {
-			// printf("0x%02hhx,   ", xtime((uint8_t)i));
-			if (xtime((uint8_t)i)!=res[i]) { 
-				printf("\nMismatch at xtime(0x%02x)! Comparison interrupted.\n", i);  test_failed = 1;
+			// printf("0x%02hhx,   ", xtime_o((uint8_t)i));
+			if (xtime_o((uint8_t)i)!=res[i]) { 
+				printf("\nMismatch at xtime_o(0x%02x)! Comparison interrupted.\n", i);  test_failed = 1;
 				break;
 			}
 		}
@@ -463,7 +405,7 @@ int main(int argc, char* argv[])
 	}
 
 	// test key expansion
-	printf("Testing expandKey\n");
+	printf("Testing expandKey_o\n");
 	{
 		uint8_t key_b[16] = { 0xef, 0xbe, 0xad, 0xde, 0xbe, 0xba, 0xfe, 0xca, 0x0D, 0xF0, 0xAD, 0xBA, 0x00, 0x11, 0x22, 0x33 };
 		uint32_t key_w[44] = {  0 /*, ...*/ };
@@ -480,7 +422,7 @@ int main(int argc, char* argv[])
 			0x2bd5ec59, 0x7904f966, 0xb52da4f6, 0xe878c2df,
 			0xb54e504a, 0xcc4aa92c, 0x79670dda, 0x911fcf05, 
 		};
-		expandKey(key_b, key_w);
+		expandKey_o(key_b, key_w);
 		for (int i = 0; i < 44; i++) {
 			printf("0x%08x, ", key_w[i]);
 			if (i % 4 == 3) printf("\n");
@@ -492,11 +434,11 @@ int main(int argc, char* argv[])
 				break;
 			}
 		}
-		printf("Testing addRoundKey\n");
+		printf("Testing addRoundKey_o\n");
 		// test  AddRoundKey (last round)
 		t_state state = { 0x01234567, 0x89abcdef, 0xdeadbeef, 0x00112233 };
 		t_state res_state = { 0xb46d152d, 0x45e164c3, 0xa7cab335, 0x910eed36 };
-		addRoundKey(state, key_w, 10);
+		addRoundKey_o(state, key_w, 10);
 		printf("0x%08x, 0x%08x, 0x%08x, 0x%08x\n", state[0], state[1], state[2], state[3]);
 		for (int i = 0; i < 4; i++) {
 			if (state[i] != res_state[i]) { printf("Mismatch at state[%d]!\n", i); }
@@ -504,8 +446,10 @@ int main(int argc, char* argv[])
 
 	}
 
-	// test aes encryption
-	printf("Testing aes\n");
+
+    clock_t tStart = clock();
+	// test aes_o encryption
+	printf("Testing aes_o\n");
 	{
 		uint8_t key[16] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
 		uint8_t in[16] =  { 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89};
@@ -513,16 +457,16 @@ int main(int argc, char* argv[])
 		uint8_t res_out[16] = { 0xa3, 0x3a, 0xca, 0x68, 0x72, 0xa2, 0x27, 0x74, 0xbf, 0x99, 0xf3, 0x71, 0xaa, 0x99, 0xd2, 0x5a };
 
 		printf("Key: ");
-		hexprint16(key);
+		hexprint16_o(key);
 		puts("");
 		printf("In:  ");
-		hexprint16(in);
+		hexprint16_o(in);
 		puts("");
 
-		aes(in, out, key);
+		aes_o(in, out, key);
 
 		printf("Out: ");
-		hexprint16(out);
+		hexprint16_o(out);
 		puts("");
 
 		for (int i = 0; i < 16; i++) {
@@ -536,5 +480,6 @@ int main(int argc, char* argv[])
 	else {
 		printf("============== All tests OK! ===============\n");
 	}
+    printf("Time taken: %.10fs\n", ((double)(clock() - tStart)/CLOCKS_PER_SEC)*1000);
 	return  test_failed;
 }

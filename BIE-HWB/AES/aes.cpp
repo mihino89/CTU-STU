@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <time.h>
 
 /* AES-128 simple implementation template and testing */
 
@@ -240,24 +241,25 @@ void aes(uint8_t *in, uint8_t *out, uint8_t *skey)
     state[2] = word(in[8], in[9], in[10], in[11]);
     state[3] = word(in[12], in[13], in[14], in[15]);
 
-	printf("IN:  "); printstate(state);
+	// printf("IN:  "); printstate(state);
 
 	uint32_t expKey[11 * 4];
 
 	expandKey(skey, expKey);
 
-	for (int i = 0; i < 11; i++) {
-		printf("K%02d: ", i);
-		hexprintws(expKey + 4 * i, 4);
-	}
+	// for (int i = 0; i < 11; i++) {
+	// 	printf("K%02d: ", i);
+	// 	hexprintws(expKey + 4 * i, 4);
+	// }
 
 	addRoundKey(state, expKey, 0);
-	printf("ARK: "); printstate(state);
+	// printf("ARK: "); printstate(state);
 
 	for(int i = 1; i < numberOfRounds; i++){
         subBytes(state);
         shiftRows(state);
         mixColumns(state);
+		// printstate(state);
         addRoundKey(state, expKey, i);
     }
 
@@ -278,7 +280,7 @@ void aes(uint8_t *in, uint8_t *out, uint8_t *skey)
 //****************************
 // MAIN function: AES testing
 //****************************
-int main(int argc, char* argv[])
+int aes_unoptimazed()
 {
 	int test_failed = 0;
 	// test subBytes
@@ -395,6 +397,8 @@ int main(int argc, char* argv[])
 
 	}
 
+	clock_t tStart = clock();
+
 	// test aes encryption
 	printf("Testing aes\n");
 	{
@@ -427,5 +431,6 @@ int main(int argc, char* argv[])
 	else {
 		printf("============== All tests OK! ===============\n");
 	}
+	printf("Time taken: %.10fs\n", ((double)(clock() - tStart)/CLOCKS_PER_SEC)*1000);
 	return  test_failed;
 }
