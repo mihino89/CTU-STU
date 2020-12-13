@@ -34,4 +34,9 @@ int main(int argc, char* argv[]){
 
     test_aes_unoptimized(rounds);
     test_aes_optimized(rounds);
+
+    rounds=10000000;
+
+    test_aes_unoptimized(rounds);
+    test_aes_optimized(rounds);
 }

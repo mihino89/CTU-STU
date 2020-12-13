@@ -1,0 +1,18 @@
+Shares from the sector "Aerospace"
+Shares from the sector "Aerospace"
+----------------------------------
+----------------------------------
+ABQP,Gshgfy casx yqwov,Aerospace,74221877,57.91
+ABQP,Gshgfy casx yqwov,Aerospace,74221877,57.91
+KN,Qkwk mwib djjg,Aerospace,2241352541,95.87
+KN,Qkwk mwib djjg,Aerospace,2241352541,95.87
+QSFE,Gpitjb lvy jpvj,Aerospace,9409460741,253.85
+QSFE,Gpitjb lvy jpvj,Aerospace,9409460741,253.85
+Z,Djafcv wmgrx crk,Aerospace,84315152952,69.30
+Z,Djafcv wmgrx crk,Aerospace,84315152952,69.30
+EI,Ultno tdoxz veuzy,Aerospace,11632622672,56.10
+EI,Ultno tdoxz veuzy,Aerospace,11632622672,56.10
+----------------------------------
+----------------------------------
+minimum last price = 56.10	average last price = 106.61	maximum last price= 253.85
+minimum last price = 56.10	average last price = 106.61	maximum last price= 253.85

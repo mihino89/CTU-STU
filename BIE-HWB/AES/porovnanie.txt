@@ -1,0 +1,8 @@
+n=1m
+	- Time taken unoptimized AES algorithm: 4.8271790000s
+	- Time taken optimized AES algorithm: 1.1294130000s
+
+n=10m
+	- Time taken unoptimized AES algorithm: 50.5799970000s
+	- Time taken optimized AES algorithm: 12.1874350000s
+
